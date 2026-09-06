@@ -1,0 +1,14 @@
+node_modules
+.env
+dist
+build
+.DS_Store
+
+frontend/node_modules
+frontend/dist
+frontend/.env
+# Dados locais e mensagens com links de autenticação
+.local/
+.emails/
+.env
+*.incompativel

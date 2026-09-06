@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                     Int       @id @default(autoincrement())
+  nome                   String
+  email                  String    @unique
+  senha                  String
+  telefone               String?
+
+  endereco               String?
+  cep                    String?
+  rua                    String?
+  bairro                 String?
+  cidade                 String?
+  estado                 String?
+  numero                 String?
+  complemento            String?
+  pontoReferencia        String?
+
+  role                   String    @default("CLIENTE")
+  emailConfirmado        Boolean   @default(false)
+  tokenConfirmacaoEmail  String?   @unique
+  tokenConfirmacaoExpira DateTime?
+
+  tokenResetSenha        String?   @unique
+  tokenResetSenhaExpira  DateTime?
+
+  bloqueado              Boolean   @default(false)
+  createdAt              DateTime  @default(now())
+
+  pedidos                Pedido[]
+  avaliacoes             Avaliacao[]
+  conversas              Conversa[]
+  mensagensChat          MensagemChat[]
+}
+
+model Livro {
+  id              Int      @id @default(autoincrement())
+  isbn            String?  @unique
+  titulo          String
+  autor           String
+  redator         String
+  ano             Int
+  categoria       String
+  sinopse         String
+  precoCompra     Float
+  precoAluguel    Float
+  diasInclusos    Int
+  precoDiaExtra   Float
+  estoque         Int
+  isDoado         Boolean  @default(false)
+
+  imagemUrl       String?
+
+  destaque        Boolean  @default(false)
+  disponivel      Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  pedidos         Pedido[]
+  avaliacoes      Avaliacao[]
+}
+
+model Pedido {
+  id                       Int       @id @default(autoincrement())
+  tipo                     String
+  status                   String
+  statusPagamento          String    @default("pendente")
+  valor                    Float
+  diasAluguel              Int?
+  retiradaLimite           DateTime
+  devolucaoPrevista        DateTime?
+
+  // Dados de entrega. Para retirada local, modalidadeEntrega = "retirada".
+  modalidadeEntrega        String    @default("retirada")
+  enderecoEntrega          String?
+  distanciaEntregaKm       Float?
+  valorEntrega             Float     @default(0)
+  statusEntrega            String    @default("nao_aplicavel")
+  transportadoraEntrega    String?
+  codigoRastreio           String?
+
+  // Controle de extensões de aluguel e notificações de atraso.
+  valorExtensaoPendente    Float     @default(0)
+  diasExtensaoPendente     Int       @default(0)
+  ultimaNotificacaoAtraso  DateTime?
+
+  // Referências úteis para Checkout Pro / outros gateways.
+  preferenciaPagamentoId   String?
+  linkPagamento            String?
+
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  usuarioId Int
+  livroId   Int
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  livro   Livro   @relation(fields: [livroId], references: [id])
+  pagamentos Pagamento[]
+}
+
+model Pagamento {
+  id                  Int      @id @default(autoincrement())
+  gateway             String   @default("mercadopago")
+  gatewayPaymentId    String?
+  gatewayPreferenceId String?
+  metodo              String?
+  status              String   @default("pendente")
+  tipo                String   @default("pedido")
+  valor               Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  pedidoId Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  @@index([gatewayPaymentId])
+  @@index([gatewayPreferenceId])
+}
+
+model Avaliacao {
+  id         Int      @id @default(autoincrement())
+  nota       Int
+  comentario String
+  status     String   @default("pendente")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  usuarioId Int
+  livroId   Int
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  livro   Livro   @relation(fields: [livroId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, livroId])
+  @@index([livroId, status])
+}
+
+model Conversa {
+  id        Int      @id @default(autoincrement())
+  assunto   String?  
+  status    String   @default("aberta")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  mensagens MensagemChat[]
+
+  @@index([usuarioId, status])
+}
+
+model MensagemChat {
+  id            Int      @id @default(autoincrement())
+  texto         String
+  remetenteRole String
+  lida          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  conversaId  Int
+  remetenteId Int
+
+  conversa  Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  remetente Usuario  @relation(fields: [remetenteId], references: [id], onDelete: Cascade)
+
+  @@index([conversaId, createdAt])
+}
