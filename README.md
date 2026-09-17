@@ -6,7 +6,7 @@ Sistema React + Express + Prisma para catálogo, compra, reserva, aluguel, avali
 
 Instale Node.js 22.12 ou superior. Abra um terminal nesta pasta e execute:
 
-```powershell
+```powershell para testar direto
 npm run setup
 npm run demo
 ```
@@ -17,7 +17,7 @@ Abra http://localhost:5173. A primeira instalação precisa de internet.
 - Senha de demonstração: `admin123`
 - O catálogo começa vazio: entre como administrador e use **Novo Livro**.
 - Banco persistente da demonstração: `.local/database`.
-- E-mails de demonstração: `.local/emails`. Abra o HTML mais recente e use o link de confirmação ou recuperação.
+- E-mails de demonstração: `.local/emails`. Abra o HTML mais recente e use o link de confirmação ou recuperação. pegando o link que vai criar no .local
 - Na página de detalhes do pedido, use **Simular pagamento (demonstração)** para testar sem cobrança. Em Meus Pedidos, clique em **Detalhes e pagamento**.
 - Encerre o terminal com Ctrl+C. Ao reiniciar a demonstração, faça login novamente.
 - As portas 3000, 5173 e 55440 precisam estar livres. A demonstração usa um banco isolado e não acessa seu PostgreSQL existente.
